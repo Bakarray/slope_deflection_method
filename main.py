@@ -9,10 +9,11 @@ number_of_spans = number_of_nodes - 1
 
 # create a class to store the properties of each node, then create functions that will calculate each property
 class Node:
-    def __init__(self, settlement, angular_displacement, equilibrium_equation):
+    def __init__(self, settlement, angular_displacement, equilibrium_equation, node_reaction):
         self.settlement = settlement
         self.angular_displacement = angular_displacement
         self.equilibrium_equation = equilibrium_equation
+        self.node_reaction = node_reaction
 
 
 # store all the nodes in a list, and make everything node an instance of the class 'Node'
@@ -20,9 +21,11 @@ beam_nodes = []
 settlement_variable = ""
 angular_displacement_variable = ""
 equilibrium_equation_variable = ""
+node_reaction_variable = ""
 for i in range(number_of_nodes):
     beam_nodes.append("")
-    beam_nodes[i] = Node(settlement_variable, angular_displacement_variable, equilibrium_equation_variable)
+    beam_nodes[i] = Node(settlement_variable, angular_displacement_variable, equilibrium_equation_variable,
+                         node_reaction_variable)
 
 # make all the unknown angular displacements sympy symbols, and store them in a list, first and last are always = 0
 list_of_unknown_angular_displacements = []
@@ -93,7 +96,7 @@ print("Key words for loading condition:"
       "\nThree equal point loads, spaced at 1/4 of the total length from each other (P_C_3)"
       "\nUniformly distributed load over the whole length (UDL)"
       "\nUniformly distributed load over half of the span on the right side (UDL/2_R)"
-      "\nUniformly distributed load over half of the span on the left side (UDL/2_L)" 
+      "\nUniformly distributed load over half of the span on the left side (UDL/2_L)"
       "\nVariably distributed load, with highest point on the right end (VDL_R)"
       "\nVariably distributed load, with highest point on the left end (VDL_L)"
       "\nVariably distributed load, with highest point at the center (VDL_C)")
@@ -105,7 +108,8 @@ for i in range(number_of_spans):
     if beam_spans[i].loading_condition == 'P_C':
         beam_spans[i].right_fem = (beam_spans[i].load * beam_spans[i].span_length) / 8
         beam_spans[i].left_fem = -1 * beam_spans[i].right_fem
-        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (beam_spans[i].load * (beam_spans[i].span_length/2))) / beam_spans[i].span_length)
+        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (
+                beam_spans[i].load * (beam_spans[i].span_length / 2))) / beam_spans[i].span_length)
         beam_spans[i].reaction_at_left_node_on_span = beam_spans[i].load - beam_spans[i].reaction_at_right_node_on_span
 
     elif beam_spans[i].loading_condition == 'P_X':
@@ -116,67 +120,97 @@ for i in range(number_of_spans):
 
         beam_spans[i].left_fem = (beam_spans[i].load * b * b * a) / (beam_spans[i].span_length *
                                                                      beam_spans[i].span_length)
-        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (beam_spans[i].load * a)) / beam_spans[i].span_length)
+        beam_spans[i].reaction_at_right_node_on_span = (
+                (beam_spans[i].left_moment + beam_spans[i].right_moment + (beam_spans[i].load * a)) / beam_spans[
+            i].span_length)
         beam_spans[i].reaction_at_left_node_on_span = beam_spans[i].load - beam_spans[i].reaction_at_right_node_on_span
 
     elif beam_spans[i].loading_condition == 'P_C_2':
         beam_spans[i].right_fem = (2 * beam_spans[i].load * beam_spans[i].span_length) / 9
         beam_spans[i].left_fem = -1 * beam_spans[i].right_fem
-        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (beam_spans[i].load * ((2*beam_spans[i].span_length)/3)) + (beam_spans[i].load * (beam_spans[i].span_length/3))) / beam_spans[i].span_length)
-        beam_spans[i].reaction_at_left_node_on_span = 2*beam_spans[i].load - beam_spans[i].reaction_at_right_node_on_span
+        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (
+                beam_spans[i].load * ((2 * beam_spans[i].span_length) / 3)) + (beam_spans[i].load * (
+                beam_spans[i].span_length / 3))) / beam_spans[i].span_length)
+        beam_spans[i].reaction_at_left_node_on_span = 2 * beam_spans[i].load - beam_spans[
+            i].reaction_at_right_node_on_span
 
     elif beam_spans[i].loading_condition == 'P_C_3':
         beam_spans[i].right_fem = (15 * beam_spans[i].load * beam_spans[i].span_length) / 48
         beam_spans[i].left_fem = -1 * beam_spans[i].right_fem
-        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (beam_spans[i].load * ((3*beam_spans[i].span_length)/4)) + (beam_spans[i].load * ((2*beam_spans[i].span_length)/4)) + (beam_spans[i].load * (beam_spans[i].span_length/4))) / beam_spans[i].span_length)
-        beam_spans[i].reaction_at_left_node_on_span = 3*beam_spans[i].load - beam_spans[i].reaction_at_right_node_on_span
+        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (
+                beam_spans[i].load * ((3 * beam_spans[i].span_length) / 4)) + (beam_spans[i].load *
+                                                                               ((2 * beam_spans[
+                                                                                   i].span_length) / 4)) + (
+                                                                 beam_spans[i].load * (
+                                                                     beam_spans[i].span_length / 4))) /
+                                                        beam_spans[i].span_length)
+        beam_spans[i].reaction_at_left_node_on_span = 3 * beam_spans[i].load - beam_spans[
+            i].reaction_at_right_node_on_span
 
     elif beam_spans[i].loading_condition == 'UDL':
         beam_spans[i].right_fem = (beam_spans[i].load * beam_spans[i].span_length * beam_spans[i].span_length) / 12
         beam_spans[i].left_fem = -1 * beam_spans[i].right_fem
-        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (beam_spans[i].load * ((beam_spans[i].span_length * beam_spans[i].span_length)/2))) / beam_spans[i].span_length)
-        beam_spans[i].reaction_at_left_node_on_span = (beam_spans[i].load * beam_spans[i].span_length) - beam_spans[i].reaction_at_right_node_on_span
+        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (
+                beam_spans[i].load * ((beam_spans[i].span_length * beam_spans[i].span_length) / 2))) / beam_spans[
+                                                            i].span_length)
+        beam_spans[i].reaction_at_left_node_on_span = (beam_spans[i].load * beam_spans[i].span_length) - beam_spans[
+            i].reaction_at_right_node_on_span
 
     elif beam_spans[i].loading_condition == 'UDL/2_R':
         beam_spans[i].right_fem = (11 * beam_spans[i].load * beam_spans[i].span_length * beam_spans[
             i].span_length) / 192
         beam_spans[i].left_fem = -1 * (5 * beam_spans[i].load * beam_spans[i].span_length *
                                        beam_spans[i].span_length) / 192
-        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (beam_spans[i].load * ((3*beam_spans[i].span_length * beam_spans[i].span_length)/8))) / beam_spans[i].span_length)
-        beam_spans[i].reaction_at_left_node_on_span = ((beam_spans[i].load * beam_spans[i].span_length)/2) - beam_spans[i].reaction_at_right_node_on_span
+        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (
+                beam_spans[i].load * ((3 * beam_spans[i].span_length * beam_spans[i].span_length) / 8))) /
+                                                        beam_spans[i].span_length)
+        beam_spans[i].reaction_at_left_node_on_span = ((beam_spans[i].load * beam_spans[i].span_length) / 2) - \
+                                                      beam_spans[i].reaction_at_right_node_on_span
 
     elif beam_spans[i].loading_condition == 'UDL/2_L':
         beam_spans[i].right_fem = (5 * beam_spans[i].load * beam_spans[i].span_length * beam_spans[i].span_length) / 192
         beam_spans[i].left_fem = -1 * (11 * beam_spans[i].load * beam_spans[i].span_length *
                                        beam_spans[i].span_length) / 192
-        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (beam_spans[i].load * ((beam_spans[i].span_length * beam_spans[i].span_length) / 8))) / beam_spans[i].span_length)
-        beam_spans[i].reaction_at_left_node_on_span = ((beam_spans[i].load * beam_spans[i].span_length)/2) - beam_spans[i].reaction_at_right_node_on_span
+        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (
+                beam_spans[i].load * ((beam_spans[i].span_length * beam_spans[i].span_length) / 8))) / beam_spans[
+                                                            i].span_length)
+        beam_spans[i].reaction_at_left_node_on_span = ((beam_spans[i].load * beam_spans[i].span_length) / 2) - \
+                                                      beam_spans[i].reaction_at_right_node_on_span
 
     elif beam_spans[i].loading_condition == 'VDL_R':
         beam_spans[i].right_fem = (beam_spans[i].load * beam_spans[i].span_length * beam_spans[i].span_length) / 20
         beam_spans[i].left_fem = -1 * (beam_spans[i].load * beam_spans[i].span_length * beam_spans[i].span_length) / 30
-        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (beam_spans[i].load * ((2*beam_spans[i].span_length * beam_spans[i].span_length) / 6))) / beam_spans[i].span_length)
-        beam_spans[i].reaction_at_left_node_on_span = ((beam_spans[i].load * beam_spans[i].span_length)/2) - beam_spans[i].reaction_at_right_node_on_span
+        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (
+                beam_spans[i].load * ((2 * beam_spans[i].span_length * beam_spans[i].span_length) / 6))) /
+                                                        beam_spans[i].span_length)
+        beam_spans[i].reaction_at_left_node_on_span = ((beam_spans[i].load * beam_spans[i].span_length) / 2) - \
+                                                      beam_spans[i].reaction_at_right_node_on_span
 
     elif beam_spans[i].loading_condition == 'VDL_L':
         beam_spans[i].right_fem = (beam_spans[i].load * beam_spans[i].span_length * beam_spans[i].span_length) / 30
         beam_spans[i].left_fem = -1 * (beam_spans[i].load * beam_spans[i].span_length * beam_spans[i].span_length) / 20
-        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (beam_spans[i].load * ((beam_spans[i].span_length * beam_spans[i].span_length) / 6))) / beam_spans[i].span_length)
-        beam_spans[i].reaction_at_left_node_on_span = ((beam_spans[i].load * beam_spans[i].span_length)/2) - beam_spans[i].reaction_at_right_node_on_span
+        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (
+                beam_spans[i].load * ((beam_spans[i].span_length * beam_spans[i].span_length) / 6))) / beam_spans[
+                                                            i].span_length)
+        beam_spans[i].reaction_at_left_node_on_span = ((beam_spans[i].load * beam_spans[i].span_length) / 2) - \
+                                                      beam_spans[i].reaction_at_right_node_on_span
 
     elif beam_spans[i].loading_condition == 'VDL_C':
         beam_spans[i].right_fem = (5 * beam_spans[i].load * beam_spans[i].span_length * beam_spans[i].span_length) / 96
         beam_spans[i].left_fem = -1 * beam_spans[i].right_fem
-        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (beam_spans[i].load * ((beam_spans[i].span_length * beam_spans[i].span_length) / 4))) / beam_spans[i].span_length)
-        beam_spans[i].reaction_at_left_node_on_span = ((beam_spans[i].load * beam_spans[i].span_length)/2) - beam_spans[i].reaction_at_right_node_on_span
+        beam_spans[i].reaction_at_right_node_on_span = ((beam_spans[i].left_moment + beam_spans[i].right_moment + (
+                beam_spans[i].load * ((beam_spans[i].span_length * beam_spans[i].span_length) / 4))) / beam_spans[
+                                                            i].span_length)
+        beam_spans[i].reaction_at_left_node_on_span = ((beam_spans[i].load * beam_spans[i].span_length) / 2) - \
+                                                      beam_spans[i].reaction_at_right_node_on_span
 
     elif beam_spans[i].loading_condition == "none":
         beam_spans[i].right_fem = 0
         beam_spans[i].left_fem = 0
-        beam_spans[i].reaction_at_right_node_on_span = (beam_spans[i].left_moment + beam_spans[i].right_moment) / beam_spans[i].span_length
+        beam_spans[i].reaction_at_right_node_on_span = (beam_spans[i].left_moment + beam_spans[i].right_moment) / \
+                                                       beam_spans[i].span_length
         beam_spans[i].reaction_at_left_node_on_span = -1 * beam_spans[i].reaction_at_right_node_on_span
         print(f"No loading on span {i}")
-
 
 # Make all the end span moments sympy symbols, and store them in a list of unknown end moments
 list_of_end_moments = []
@@ -241,11 +275,11 @@ for i in range(number_of_spans):
     else:
         beam_spans[i].left_slope_deflection_equation = Eq((((2 * (
                 (2 * beam_nodes[i].angular_displacement) + beam_nodes[i + 1].angular_displacement - (
-                 3 * beam_spans[i].cord_rotation))) / beam_spans[i].span_length) + beam_spans[i].left_fem),
+                3 * beam_spans[i].cord_rotation))) / beam_spans[i].span_length) + beam_spans[i].left_fem),
                                                           beam_spans[i].left_moment)
         beam_spans[i].right_slope_deflection_equation = Eq((((2 * (
                 (2 * beam_nodes[i + 1].angular_displacement) + beam_nodes[i].angular_displacement - (
-                 3 * beam_spans[i].cord_rotation))) / beam_spans[i].span_length) + beam_spans[i].right_fem),
+                3 * beam_spans[i].cord_rotation))) / beam_spans[i].span_length) + beam_spans[i].right_fem),
                                                            beam_spans[i].right_moment)
 
     list_of_slope_deflection_equations.append(beam_spans[i].left_slope_deflection_equation)
@@ -265,13 +299,33 @@ for i in range(number_of_nodes):
 equations = list_of_slope_deflection_equations + list_of_equilibrium_equations
 unknowns = list_of_end_moments + list_of_unknown_angular_displacements
 
-# next is to solve all the equations for the unknowns
+# next is to solve all the equations for the unknown moments and angular displacement
 solution = solve(tuple(equations), tuple(unknowns))
 
 print(solution)
+
+# next is to get the reaction for each beam node
+for i in range(number_of_nodes):
+    if i == 0:
+        beam_nodes[i].node_reaction = beam_spans[i].reaction_at_left_node_on_span
+
+    elif i == number_of_nodes:
+        beam_nodes[i].node_reaction = beam_spans[number_of_spans].reaction_at_right_node_on_span
+
+    else:
+        beam_nodes[i].node_reaction = beam_spans[i-1].reaction_at_right_node_on_span +\
+                                      beam_spans[i].reaction_at_left_node_on_span
+
+# next is to calculate the shear-forces on the beam
+
+
+
+
+
 
 
 # make code work with settlement
 # make code work for beams with cantilever
 # make code work for frames
 # make code work for beams and frames with point moment
+
