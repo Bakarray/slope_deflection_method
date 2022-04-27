@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 from sympy import symbols, Eq, solve
 
 # first step is to determine the number of spans on the beam
@@ -19,10 +18,10 @@ class Node:
 
 # store all the nodes in a list, and make everything node an instance of the class 'Node'
 beam_nodes = []
-settlement_variable = ""
-angular_displacement_variable = ""
+settlement_variable = 0
+angular_displacement_variable = 0
 equilibrium_equation_variable = ""
-node_reaction_variable = ""
+node_reaction_variable = 0
 for i in range(number_of_nodes):
     beam_nodes.append("")
     beam_nodes[i] = Node(settlement_variable, angular_displacement_variable, equilibrium_equation_variable,
@@ -64,19 +63,19 @@ class Span:
 
 # store all the nodes in a list, and make everything node an instance of the class 'Node'
 beam_spans = []
-left_fem_variable = ""
-right_fem_variable = ""
-span_length_variable = ""
-load_variable = ""
+left_fem_variable = 1
+right_fem_variable = 1
+span_length_variable = 1
+load_variable = 1
 loading_condition_variable = ""
-cord_rotation_variable = ""
-left_moment_variable = ""
-right_moment_variable = ""
+cord_rotation_variable = 1
+left_moment_variable = 1
+right_moment_variable = 1
 left_slope_deflection_equation_variable = ""
 right_slope_deflection_equation_variable = ""
-reaction_at_left_node_on_span_variable = ""
-reaction_at_right_node_on_span_variable = ""
-span_a_value_variable = ""
+reaction_at_left_node_on_span_variable = 1
+reaction_at_right_node_on_span_variable = 1
+span_a_value_variable = 1
 
 for i in range(number_of_spans):
     beam_spans.append("")
@@ -161,7 +160,7 @@ for i in range(number_of_spans):
     elif beam_spans[i].loading_condition == "none":
         beam_spans[i].right_fem = 0
         beam_spans[i].left_fem = 0
-        print(f"No loading on span {i}")
+        print(f"No loading on span {i+1}")
 
 # Make all the end span moments sympy symbols, and store them in a list of unknown end moments
 list_of_end_moments = []
@@ -252,11 +251,11 @@ unknowns = list_of_end_moments + list_of_unknown_angular_displacements
 
 # next is to solve all the equations for the unknown moments and angular displacement
 solution = solve(tuple(equations), tuple(unknowns))
-'''
+
+print(equations)
 print(solution)
 print(solution[beam_spans[0].left_moment])
 print(list_of_end_moments)
-'''
 
 # next is to get the reactions for each span node
 for i in range(number_of_spans):
@@ -497,9 +496,10 @@ for i in range(number_of_spans):
 
 '''
 
+'''
 plt.plot(position_along_beam, shear_forces)
 plt.show()
-
+'''
 # make code work with settlement
 # make code work for beams with cantilever
 # make code work for frames
